@@ -3,26 +3,29 @@ run-name: Check for OSP nightly and create a PR
 on: workflow_dispatch
   # schedule:
   #  - cron: '0 1 * * *'
+permissions: {}
 jobs:
   update-osp-nightly:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - name: Check for new OSP nightly build
+      - name: Update index image digest
         run: |
           tag="v4.14-candidate"
           inspected=$(skopeo inspect docker://quay.io/openshift-pipeline/openshift-pipelines-pipelines-operator-bundle-container-index:$tag)
           created=$(echo "$inspected" | jq -r '.Created')
-          echo "DEBUG: tag $tag created: $created"
+          echo "DEBUG: Found tag $tag created: $created"
           digest=$(echo "$inspected" | jq -r '.Digest')
-          echo "DEBUG: digest: $digest"
-          sed -i -E "s/sha256:[0-9a-f]{64}/sha256:${digest}/g" catalog-source.yaml
+          echo "DEBUG: Tag digest: $digest"
+          sed -i -E "s/sha256:[0-9a-f]{64}/${digest}/g" catalog-source.yaml
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
           commit-message: "[new-osp-nightly-build] automated change"
+          title: Automated changes by update OSP nightly
           body: |
             Automated changes by [update-osp-nightly]
 
