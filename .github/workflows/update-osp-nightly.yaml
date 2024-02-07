@@ -1,8 +1,9 @@
 name: update-osp-nightly
 run-name: Check for OSP nightly and create a PR
-on: workflow_dispatch
-  # schedule:
-  #  - cron: '0 1 * * *'
+on:
+  schedule:
+    - cron: '*/2 0 * * *'
+  workflow_dispatch:
 permissions: {}
 jobs:
   update-osp-nightly:
