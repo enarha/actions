@@ -1,6 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
+  foo
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/enarha/actions?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
