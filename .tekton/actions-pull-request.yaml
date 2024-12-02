@@ -15,7 +15,7 @@ metadata:
     appstudio.openshift.io/component: actions
     pipelines.appstudio.openshift.io/type: build
   name: actions-on-pull-request
-  namespace: enatan-tenant
+  namespace: enatan-tenant1
 spec:
   params:
   - name: git-url
