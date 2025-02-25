@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/enarha/actions?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: actions
+    appstudio.openshift.io/component: actions
+  name: huge-log-generate-on-pull-request
+  namespace: enatan-tenant
+spec:
+  pipelineSpec:
+    tasks:
+    - name: log-generator
+      taskSpec:
+        steps:
+        - name: generate-log
+          image: alpine
+          script: |
+            cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1
+            for i in $(seq 1 30000); do echo -n "$i "; cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -1; done
