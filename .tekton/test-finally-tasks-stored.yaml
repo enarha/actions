@@ -1,0 +1,81 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/enarha/actions?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
+  labels:
+    appstudio.openshift.io/application: actions
+    appstudio.openshift.io/component: actions
+  generateName: test-finally-tasks-stored-
+  namespace: enatan-tenant
+spec:
+  pipelineSpec:
+    finally:
+    - name: first-task-finally
+      taskSpec:
+        steps:
+        - name: first-step-first-task-finally
+          image: alpine
+          script: |
+            date
+            sleep 60
+            echo "I'm a log from the first task finally"
+    - name: second-task-finally
+      taskSpec:
+        steps:
+        - name: first-step-second-task-finally
+          image: alpine
+          script: |
+            date
+            sleep 60
+            echo "I'm a log from the second task finally"
+    tasks:
+    - name: first-task
+      taskSpec:
+        steps:
+        - name: first-step-first-task
+          image: alpine
+          script: |
+            date
+            sleep 60
+            echo "I'm a log from the first task"
+    - name: second-task
+      runAfter:
+      - first-task
+      taskSpec:
+        steps:
+        - name: first-step-second-task
+          image: alpine
+          script: |
+            date
+            sleep 60
+            echo "I'm a log from the second task"
+    - name: task-to-fail
+      runAfter:
+      - second-task
+      taskSpec:
+        steps:
+        - name: this-will-fail
+          image: alpine
+          script: |
+            date
+            sleep 60
+            echo "this will fail"
+            exit 1
+    - name: task-after-task-to-fail
+      runAfter:
+      - task-to-fail
+      taskSpec:
+        steps:
+        - name: first-step-second-task
+          image: alpine
+          script: |
+            date
+            sleep 60
+            echo "I'm a log from the task-after-task-to-fail task"
